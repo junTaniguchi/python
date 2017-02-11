@@ -13,10 +13,17 @@ import urllib.request, json
 
 
 def get_location(location, query):
+    """
+    google Place APIの機能を利用して検索ワード（query）の存在する場所の緯度経度のリストを取得する。
+    location
+      空のリスト
+    query
+      str型。検索ワード。
+    """
     google_places_params = {
         "radius"   : 50000,
         "query"    : query,
-        "key"      : "AIzaSyBc1DoBy7wMdzYmYItbDiY0YJQmtmzatMA",
+        "key"      : "XXXX", #google APIsの認証キー
         "language" : "ja"
     }
     places_q = urllib.parse.urlencode(google_places_params)
@@ -31,6 +38,13 @@ def get_location(location, query):
     return location
 
 def get_picture(location, i):
+    """
+    google map street view APIを利用し、locationの撮影場所を元に画像ファイルを取得する。
+    location
+      str型。"緯度x経度"のフォーマットのみを引数として認める。
+    i
+      int型。出力するファイル名の連番部分。
+    """
     streetview_params = {
         "size"     : "600x600",
         "location" : location,
