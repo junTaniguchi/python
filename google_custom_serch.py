@@ -72,4 +72,4 @@ if __name__ == '__main__':
     for picture_location in picture_locations:
         get_picture(picture_location, i)
         i += 1
-    print('合計で％d件を取得できました。' % (i+1))
+    print('合計で％s件を取得できました。' % (i+1))
