@@ -53,7 +53,7 @@ def get_picture(location, i):
 if __name__ == '__main__':
     i = 0
     location_list = []
-    query = "日テレ"
+    query = "看板"
     picture_locations = get_location(location_list, query)
     for picture_location in picture_locations:
         get_picture(picture_location, i)
