@@ -19,7 +19,7 @@ def read_cifar10(filename_queue):
         pass
     
     result = CIFAR10Record()
-    # 各画像部品
+    # 各画像部品を定義
     label_bytes = 1
     result.height = 32
     result.width = 32
@@ -86,10 +86,8 @@ def distorted_samples(image):
     for _ in range(6):
         distorted_image = tf.random_crop(reshaped_image, [height, width, 3])
         distorted_image = tf.image.random_flip_left_right(distorted_image)
-        distorted_image = tf.image.random_brightness(distorted_image,
-                                                     max_delta=63)
-        distorted_image = tf.image.random_contrast(distorted_image,
-                                                   lower=0.2, upper=1.8)
+        distorted_image = tf.image.random_brightness(distorted_image, max_delta=63)
+        distorted_image = tf.image.random_contrast(distorted_image, lower=0.2, upper=1.8)
         float_image = tf.image.per_image_whitening(distorted_image)
         float_images.append(float_image)
 
