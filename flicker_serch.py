@@ -17,17 +17,17 @@ import requests
 
 def get_flicker_dict(text):
     """
-    flicker serch APIを利用し、テキスト検索でヒットした画像ファイルの情報を
-    JSON形式で取得する。
+    flicker serch APIを利用し、テキスト検索でヒットした画像ファイルの情報をJSON形式で取得する。
       参照:https://www.flickr.com/services/api/flickr.photos.search.html
-    
+    -------------------------------------------------------------------------------
     text
-      str型。検索する際のキーワードとして利用する。日本語はNG（大抵の場合ヒットしないから）。
+      str型。検索する際のキーワードとして利用する。検索ワードを2つ以上使用したい場合は、各単語を+記号で繋ぐ。
+      exmple) "東京+レストラン"
     """
     dict_url = 'https://api.flickr.com/services/rest/'
     flicker_argument = {
         'method'         : 'flickr.photos.search',
-        "api_key"        : "2f65318bba9d731e608f4afe5e880f8e",
+        "api_key"        : "XXXXXXXXXXXXXXXXX",
         "text"           : text,
         'nojsoncallback' : 1,
         'format'         : 'json',
@@ -45,9 +45,10 @@ def get_flicker_dict(text):
 
 def get_flicker_picture(FLICKER_dict):
     """
-    flicker serch APIを利用し、テキスト検索でヒットした画像ファイルの情報を
-    JSON形式で取得する。
-    https://www.flickr.com/services/api/flickr.photos.search.html
+    flicker serch APIを利用し、テキスト検索でヒットした画像ファイルの情報をJSON形式で取得する。
+    その他の引数については下記参照。
+    　　https://www.flickr.com/services/api/flickr.photos.search.html
+    -------------------------------------------------------------------------------
     text
       str型。検索する際のキーワードとして利用する。
     """
