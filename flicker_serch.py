@@ -57,7 +57,7 @@ def get_flicker_picture(FLICKER_dict):
     for i in FLICKER_dict['photos']['photo']:
         img_url = pct_url % (i['farm'],i['server'],i['id'],i['secret'])
         FLICKER_img_req = requests.get(img_url)
-        f = open("/Users/JunTaniguchi/Desktop/pythonPlayGround/study_tensorflow/API/testdata%s.png" % (str(count).zfill(4)), 'wb')
+        f = open("./album/testdata%s.png" % (str(count).zfill(4)), 'wb')
         f.write(FLICKER_img_req.content)
         f.close()
         count += 1
