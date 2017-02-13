@@ -7,6 +7,7 @@ Created on Fri Feb 10 21:01:54 2017
 
 import requests
 #import ssl
+import urllib.request
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
@@ -19,8 +20,9 @@ def get_serch_picture():
       exmple) "東京+レストラン"
     """
     url = 'https://www.google.co.jp/search?q=%E4%BA%A4%E9%80%9A%E6%A1%88%E5%86%85%E6%A8%99%E8%AD%98&source=lnms&tbm=isch&sa=X&ved=0ahUKEwjPg9_hyo3SAhWMwbwKHfRSAQ8Q_AUICCgB&biw=1335&bih=760'
-    html = urlopen(url)
-    soup = BeautifulSoup(html.read(), "html.parser")
+
+    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    soup = BeautifulSoup(urllib.request.urlopen(req).read(), "html.parser")
     
     soup_div = soup.find_all('div',{"class" : "rg_di rg_bx rg_el ivg-i"})
     count = 1
@@ -35,7 +37,7 @@ def get_serch_picture():
         
         byte_streem = requests.get(href, verify=False).content
 
-        f = open("XXXXXXXXXXXXXXX/testdata%s.png" % (str(count).zfill(4)), 'wb')
+        f = open("XXXXXXXXXXXXXXXXXXX/testdata%s.png" % (str(count).zfill(4)), 'wb')
         f.write(byte_streem)
         f.close()
         count += 1
