@@ -35,7 +35,7 @@ def get_serch_picture():
         
         byte_streem = requests.get(href, verify=False).content
 
-        f = open("/Users/JunTaniguchi/Desktop/pythonPlayGround/study_tensorflow/API/test_data/testdata%s.png" % (str(count).zfill(4)), 'wb')
+        f = open("XXXXXXXXXXXXXXX/testdata%s.png" % (str(count).zfill(4)), 'wb')
         f.write(byte_streem)
         f.close()
         count += 1
