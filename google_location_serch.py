@@ -59,7 +59,7 @@ def get_picture(location, i):
     streetview_html = urllib.request.urlopen(STREET_VIEW_IMAGE_URL).read() #.decode("utf-8")
 
     #画像の読み込み  
-    f = open("/Users/JunTaniguchi/Desktop/pythonPlayGround/study_tensorflow/API/testdata%s.png" % (str(i + 1).zfill(4)), 'wb')
+    f = open("XXXXXXXXXXX/testdata%s.png" % (str(i + 1).zfill(4)), 'wb')
     f.write(streetview_html)
     f.close()
 
