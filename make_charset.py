@@ -17,10 +17,9 @@ ttf_list = []
 url = "/Users/JunTaniguchi/Desktop/pythonPlayGround/study_tensorflow/keras_project/"
 with open(url + "japanese_font_list.txt", "r") as japanese_ttf:
     japanese_font = japanese_ttf.readlines()
+    japanese_font = [font.strip() for font in japanese_font]
     ttf_list+= list(japanese_font)
 print("font count=", len(ttf_list))
-
-
 
 # 中央に文字を描画
 def draw_text(im, font, text):
@@ -42,7 +41,7 @@ for japanese_str in japanese_lang:
         os.makedirs(url)
 
 # 回転させたり拡大したりしてデータを水増しする
-def gen_image(base_im, japanese_str, font_name):
+def gen_image(base_im, idx, japanese_str, font_name):
     for ang in range(-20, 20, 2):
         sub_im = base_im.rotate(ang)
         data = np.asarray(sub_im)
@@ -64,7 +63,7 @@ def gen_image(base_im, japanese_str, font_name):
             X.append(data)
             Y.append(japanese_str)
             if random.randint(0, 400) == 0:
-                fname = "image/num/n-{0}-{1}-{2}.png".format(
+                fname = "/Users/JunTaniguchi/Desktop/pythonPlayGround/study_tensorflow/keras_project/image/" + japanese_str + "/n-{0}-{1}-{2}.png".format(
                     font_name, japanese_str, ang, r)
                 cv2.imwrite(fname, data)
 
@@ -79,7 +78,7 @@ for path in ttf_list:
         fo = ImageFont.truetype(path, size=100)
     except:
         continue
-    for japanese_str in japanese_list:
+    for idx, japanese_str in enumerate(japanese_list):
         im = Image.new("L", (200, 200))
         draw_text(im, fo, japanese_str)
         # フォントの描画範囲を得る
@@ -103,9 +102,11 @@ for path in ttf_list:
             Y.append(japanese_str)
             # 少しずつ回転する
             base_im = Image.fromarray(np.uint8(num))
-            gen_image(base_im, japanese_str, font_name)
+            gen_image(base_im, idx, japanese_str, font_name)
 
 X = np.array(X)
 Y = np.array(Y)
-np.savez("./image/font_draw.npz", x=X, y=Y)
+np.savez("/Users/JunTaniguchi/Desktop/pythonPlayGround/study_tensorflow/keras_project/image/font_draw.npz", x=X, y=Y)
 print("ok,", len(Y))
+
+
