@@ -1,14 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Mar  7 16:45:08 2017
-
-@author: j13-taniguchi
-"""
-
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Mar  6 13:05:42 2017
-
 @author: j13-taniguchi
 """
 import os
@@ -27,12 +19,12 @@ import json
 image_w = 28
 image_h = 28
 log_filepath = './log'
-path = "/Users/j13-taniguchi/study_tensorflow/keras_project"
+path = "/Users/Juntaniguchi/study_tensorflow/keras_project"
 
-os. chdir (path)
+os.chdir(path)
 
 # フォント画像のデータを読む
-xy = np.load("./image/japanese_dataset.npz")
+xy = np.load("japanese_lang.npz")
 X = xy["x"]
 Y = xy["y"]
 # データを正規化
@@ -94,11 +86,11 @@ with tf.Graph().as_default():
     # 学習開始
     history = model.fit(X_train, y_train,
                         batch_size=128,
-                        nb_epoch=10,
+                        nb_epoch=1,
                         verbose=1,
                         validation_data=(X_test, y_test))
     # モデルを保存
-    model.save_weights('/japanese_dataset.hdf5')
+    model.save_weights('japanese_dataset.hdf5')
     model_json = model.to_json()
     with open('./japanese_dataset.json', 'w') as json_file:
         json.dump(model_json, json_file, ensure_ascii=False, indent=4, sort_keys=True, separators=(',', ': '))
@@ -109,4 +101,3 @@ with tf.Graph().as_default():
     print('Test accuracy;', score[1])
 
 KTF.set_session(old_session)
-
