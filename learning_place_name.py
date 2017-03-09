@@ -23,7 +23,7 @@ image_w = 300
 image_h = 300
 log_filepath = './log'
 
-path = "/Users/j13-taniguchi/study_tensorflow/keras_project/read_place"
+path = "/Users/JunTaniguchi/study_tensorflow/keras_project/read_place"
 os.chdir(path)
 
 from ssd import SSD300
@@ -44,8 +44,9 @@ Y = np_utils.to_categorical(Y, NUM_CLASSES)
 
 # 訓練データとテストデータに分割
 X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, Y)
-X_train = np.reshape(X_train, (len(X_train),  300, 300, 1))
-X_test  = np.reshape(X_test, (len(X_test), 300, 300, 1))
+x_train_pred = X_train
+X_train = np.reshape(X_train, (len(X_train),  300, 300, 3))
+X_test  = np.reshape(X_test, (len(X_test), 300, 300, 3))
 print('X_train shape:', X_train.shape)
 
 #VGG
@@ -82,34 +83,33 @@ with tf.Graph().as_default():
     KTF.set_learning_phase(1)
     # モデルを構築
     model = Sequential()
-    model.add(Convolution2D(32, 3, 3, border_mode='same', input_shape=(image_w, image_h, 1)))
+    model.add(Convolution2D(32, 3, 3, border_mode='same', input_shape=(image_w, image_h, 3)))
     model.add(Activation('relu'))
     model.add(Convolution2D(32, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
-    '''
-    model.add(Convolution2D(32, 3, 3, border_mode='same'))
-    model.add(Activation('relu'))
-    model.add(Convolution2D(32, 3, 3, border_mode='same'))
-    model.add(Activation('relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
-
+    model.add(Dropout(0.50))
+    
     model.add(Convolution2D(32, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(Convolution2D(32, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
-    '''
+    model.add(Dropout(0.50))
+    
+    model.add(Convolution2D(32, 3, 3, border_mode='same'))
+    model.add(Activation('relu'))
+    model.add(Convolution2D(32, 3, 3, border_mode='same'))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.50))
+    
     model.add(Flatten())
     model.add(Dense(64))
     model.add(Activation('relu'))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.25))
     model.add(Dense(NUM_CLASSES))
     model.add(Activation('softmax'))
-
     model.compile(loss='categorical_crossentropy',
         optimizer=RMSprop(),
         metrics=['accuracy'])
@@ -127,7 +127,7 @@ with tf.Graph().as_default():
     # 学習開始
     history = model.fit(X_train, y_train,
                         batch_size=128,
-                        nb_epoch=1,
+                        nb_epoch=75,
                         verbose=1,
                         validation_data=(X_test, y_test))
     
@@ -137,18 +137,20 @@ with tf.Graph().as_default():
     model.save_weights('./param/learning_place_name.hdf5')
     model_json = model.to_json()
     with open('./param/learning_place_name.json', 'w') as json_file:
-        json.dump(model_json, json_file, ensure_ascii=False, indent=4, sort_keys=True, separators=(',', ': '))
+        #json.dump(model_json, json_file)
+        json_file.write(model_json)
     
     # モデルを評価
     score = model.evaluate(X_test, y_test, verbose=0)
     print('Test score:', score[0])
     print('Test accuracy;', score[1])
+    # 予測
+    result_X_test = model.predict(X_test.astype(np.float32))
+
 
 #KTF.set_session(old_session)
 print("finish!!")
 
-# 予測
-result_X_test = model.predict(X_test)
 # 予測結果と正解のラベルを照合する
 for idx, idx_result_X in enumerate(result_X_test):
     # 予測結果のargmaxを抽出    
@@ -159,6 +161,8 @@ for idx, idx_result_X in enumerate(result_X_test):
     answer_label = place_list[answer_idx]
     # 予測結果と正解の値を比較
     if result_idx == answer_idx:
+        correct_message = "correct Awesome: answer: %s result: %s" %(answer_label, result_label)    
+        print(correct_message)
         continue
     # 不正解をコンソールへ表示   
     error_message = "incorrect: answer: %s result: %s" %(answer_label, result_label)    
@@ -171,6 +175,7 @@ for idx, idx_result_X in enumerate(result_X_test):
     incorrect_file_name = incorrect_dir + answer_label + ".png"
     # 不正解だったデータを画像化
     # idx_result_Xを非正規化
-    idx_result_X *= 256
-    img = Image.fromarray(np.uint8(idx_result_X))
-    img.save(incorrect_file_name)    
+    X_test[idx] *= 256
+    X_img_array = X_test[idx].reshape(image_w, image_h, 3)
+    img = Image.fromarray(np.uint8(X_img_array))
+    img.save(incorrect_file_name) 
