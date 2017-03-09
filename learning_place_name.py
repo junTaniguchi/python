@@ -77,14 +77,12 @@ with tf.Graph().as_default():
     #    学習率のスケジューラ
     #    改善率が低い場合にトレーニングを終了する
     #    TensorBoardの使用
-    callbacks = [keras.callbacks.ModelCheckpoint('./param/checkpoints/weights.{epoch:02d}-{val_loss:.2f}.hdf5',
-                                                 verbose=1,
-                                                 save_weights_only=True),
+    callbacks = [
+                 keras.callbacks.ModelCheckpoint('./param/checkpoints/weights.{epoch:02d}-{val_loss:.2f}.hdf5', verbose=1, save_weights_only=True),
                  keras.callbacks.LearningRateScheduler(schedule),
                  keras.callbacks.EarlyStopping(monitor='val_loss', patience=0, verbose=0, mode='auto'),
-                 keras.callbacks.TensorBoard(log_dir=log_filepath,
-                                             histogram_freq=1,
-                                             write_graph=True)]
+                 #keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=1, write_graph=True)
+                ]
     # 学習開始
     history = model.fit(X_train, y_train,
                         batch_size=128,
