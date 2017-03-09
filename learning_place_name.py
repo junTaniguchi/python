@@ -88,7 +88,7 @@ with tf.Graph().as_default():
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
-    
+    '''
     model.add(Convolution2D(32, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
     model.add(Convolution2D(32, 3, 3, border_mode='same'))
@@ -102,7 +102,7 @@ with tf.Graph().as_default():
     model.add(Activation('relu'))
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.25))
-
+    '''
     model.add(Flatten())
     model.add(Dense(64))
     model.add(Activation('relu'))
@@ -127,16 +127,16 @@ with tf.Graph().as_default():
     # 学習開始
     history = model.fit(X_train, y_train,
                         batch_size=128,
-                        nb_epoch=50,
+                        nb_epoch=1,
                         verbose=1,
                         validation_data=(X_test, y_test))
     
-
-    plot(model, to_file='learning_place_name.png')
+    print(history)
+    plot(model, to_file='./param/learning_place_name.png')
     # モデルを保存
-    model.save_weights('learning_place_name.hdf5')
+    model.save_weights('./param/learning_place_name.hdf5')
     model_json = model.to_json()
-    with open('learning_place_name.json', 'w') as json_file:
+    with open('./param/learning_place_name.json', 'w') as json_file:
         json.dump(model_json, json_file, ensure_ascii=False, indent=4, sort_keys=True, separators=(',', ': '))
     
     # モデルを評価
