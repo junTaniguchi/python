@@ -17,6 +17,7 @@ import keras.backend.tensorflow_backend as KTF
 from keras.utils.visualize_util import plot
 import json
 from PIL import Image, ImageDraw, ImageFont
+import shutil
 
 
 image_w = 300
@@ -52,18 +53,22 @@ print('X_train shape:', X_train.shape)
 #VGG
 #old_session = KTF.get_session()
 
-def schedule(epoch, decay=0.9):
-    return 3e-4 * decay**(epoch)
 
 with tf.Graph().as_default():
-    
+    '''
     session = tf.Session('')
     KTF.set_session(session)
     KTF.set_learning_phase(1)
+
+    def schedule(epoch, decay=0.9):
+        return base_lr * decay**(epoch)
+    base_lr = 3e-4
+    optim = keras.optimizers.Adam(lr=base_lr)
+
     # モデルを構築
     model = SSD300(input_shape=(300, 300, 3), num_classes=NUM_CLASSES + 1)
     model.compile(loss='categorical_crossentropy',
-        optimizer=RMSprop(),
+        optimizer=optim,
         metrics=['accuracy'])
     model.summary()
     
@@ -90,6 +95,12 @@ with tf.Graph().as_default():
     session = tf.Session('')
     KTF.set_session(session)
     KTF.set_learning_phase(1)
+
+    def schedule(epoch, decay=0.9):
+        return base_lr * decay**(epoch)
+    base_lr = 3e-4
+    optim = keras.optimizers.Adam(lr=base_lr)
+
     # モデルを構築
     model = Sequential()
     model.add(Convolution2D(32, 3, 3, border_mode='same', input_shape=(image_w, image_h, 3)))
@@ -120,24 +131,24 @@ with tf.Graph().as_default():
     model.add(Dense(NUM_CLASSES))
     model.add(Activation('softmax'))
     model.compile(loss='categorical_crossentropy',
-        optimizer=RMSprop(),
+        optimizer=optim,
         metrics=['accuracy'])
     model.summary()
-
+    # 中間チェックポイントのデータを一時保存するためのディレクトリを作成
+    if not os.path.exists('./param/checkpoints'):
+        os.mkdir('./param/checkpoints')
     # callback関数にて下記機能を追加
     #    重みパラメータの中間セーブ
     #    学習率のスケジューラ
     #    改善率が低い場合にトレーニングを終了する
-    #    TensorBoardの使用
+    #    TensorBoardの使用 $tensorboard --logdir=/full_path_to_your_logs
 
-    callbacks = [keras.callbacks.ModelCheckpoint('./param/checkpoints/weights.{epoch:02d}-{val_loss:.2f}.hdf5',
-                                                 verbose=1,
-                                                 save_weights_only=True),
+    callbacks = [
+                 keras.callbacks.ModelCheckpoint('./param/checkpoints/weights.{epoch:02d}-{val_loss:.2f}.hdf5', verbose=1, save_weights_only=True),
                  keras.callbacks.LearningRateScheduler(schedule),
                  keras.callbacks.EarlyStopping(monitor='val_loss', patience=0, verbose=0, mode='auto'),
-                 keras.callbacks.TensorBoard(log_dir=log_filepath,
-                                             histogram_freq=1,
-                                             write_graph=True)]
+                 #keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=1, write_graph=True)
+                ]
         
     if os.path.exists('learning_place_name.hdf5'):
         model.load_weights('learning_place_name.hdf5', by_name=True)
@@ -148,11 +159,15 @@ with tf.Graph().as_default():
                         verbose=1,
                         callbacks=callbacks,
                         validation_data=(X_test, y_test))
-    '''
+    
     print(history)
     plot(model, to_file='./param/learning_place_name.png')
     # モデルを保存
     model.save_weights('./param/learning_place_name.hdf5')
+    # チェックポイントとなっていたファイルを削除
+    shutil.rmtree('./param/checkpoints')
+    
+    # 重みパラメータをJSONフォーマットで出力
     model_json = model.to_json()
     with open('./param/learning_place_name.json', 'w') as json_file:
         #json.dump(model_json, json_file)
