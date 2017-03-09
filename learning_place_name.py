@@ -52,6 +52,9 @@ print('X_train shape:', X_train.shape)
 #VGG
 #old_session = KTF.get_session()
 
+def schedule(epoch, decay=0.9):
+    return 3e-4 * decay**(epoch)
+
 with tf.Graph().as_default():
     
     session = tf.Session('')
@@ -64,13 +67,19 @@ with tf.Graph().as_default():
         metrics=['accuracy'])
     model.summary()
     
-    # callback関数にて収束判定を追加    
-    keras.callbacks.EarlyStopping(monitor='val_loss', patience=0, verbose=0, mode='auto')
-    # callback関数にてTensorboardを可視化
-    tb_cb = keras.callbacks.TensorBoard(log_dir=log_filepath,
-                                        histogram_freq=1,
-                                        write_graph=True)
-    cbks = [tb_cb]
+    # callback関数にて下記機能を追加
+    #    重みパラメータの中間セーブ
+    #    学習率のスケジューラ
+    #    改善率が低い場合にトレーニングを終了する
+    #    TensorBoardの使用
+    callbacks = [keras.callbacks.ModelCheckpoint('./param/checkpoints/weights.{epoch:02d}-{val_loss:.2f}.hdf5',
+                                                 verbose=1,
+                                                 save_weights_only=True),
+                 keras.callbacks.LearningRateScheduler(schedule),
+                 keras.callbacks.EarlyStopping(monitor='val_loss', patience=0, verbose=0, mode='auto'),
+                 keras.callbacks.TensorBoard(log_dir=log_filepath,
+                                             histogram_freq=1,
+                                             write_graph=True)]
     # 学習開始
     history = model.fit(X_train, y_train,
                         batch_size=128,
@@ -114,13 +123,22 @@ with tf.Graph().as_default():
         optimizer=RMSprop(),
         metrics=['accuracy'])
     model.summary()
-    # callback関数にて収束判定を追加    
-    keras.callbacks.EarlyStopping(monitor='val_loss', patience=0, verbose=0, mode='auto')
-    # callback関数にてTensorboardを可視化
-    tb_cb = keras.callbacks.TensorBoard(log_dir=log_filepath,
-                                        histogram_freq=1,
-                                        write_graph=True)
-    cbks = [tb_cb]
+
+    # callback関数にて下記機能を追加
+    #    重みパラメータの中間セーブ
+    #    学習率のスケジューラ
+    #    改善率が低い場合にトレーニングを終了する
+    #    TensorBoardの使用
+
+    callbacks = [keras.callbacks.ModelCheckpoint('./param/checkpoints/weights.{epoch:02d}-{val_loss:.2f}.hdf5',
+                                                 verbose=1,
+                                                 save_weights_only=True),
+                 keras.callbacks.LearningRateScheduler(schedule),
+                 keras.callbacks.EarlyStopping(monitor='val_loss', patience=0, verbose=0, mode='auto'),
+                 keras.callbacks.TensorBoard(log_dir=log_filepath,
+                                             histogram_freq=1,
+                                             write_graph=True)]
+        
     if os.path.exists('learning_place_name.hdf5'):
         model.load_weights('learning_place_name.hdf5', by_name=True)
     # 学習開始
@@ -128,6 +146,7 @@ with tf.Graph().as_default():
                         batch_size=128,
                         nb_epoch=75,
                         verbose=1,
+                        callbacks=callbacks,
                         validation_data=(X_test, y_test))
     '''
     print(history)
