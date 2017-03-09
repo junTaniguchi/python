@@ -53,12 +53,12 @@ print('X_train shape:', X_train.shape)
 #old_session = KTF.get_session()
 
 with tf.Graph().as_default():
-    '''
+    
     session = tf.Session('')
     KTF.set_session(session)
     KTF.set_learning_phase(1)
     # モデルを構築
-    model = SSD300(input_shape=(300, 300, 1), num_classes=NUM_CLASSES)
+    model = SSD300(input_shape=(300, 300, 3), num_classes=NUM_CLASSES + 1)
     model.compile(loss='categorical_crossentropy',
         optimizer=RMSprop(),
         metrics=['accuracy'])
@@ -114,7 +114,6 @@ with tf.Graph().as_default():
         optimizer=RMSprop(),
         metrics=['accuracy'])
     model.summary()
-    
     # callback関数にて収束判定を追加    
     keras.callbacks.EarlyStopping(monitor='val_loss', patience=0, verbose=0, mode='auto')
     # callback関数にてTensorboardを可視化
@@ -130,7 +129,7 @@ with tf.Graph().as_default():
                         nb_epoch=75,
                         verbose=1,
                         validation_data=(X_test, y_test))
-    
+    '''
     print(history)
     plot(model, to_file='./param/learning_place_name.png')
     # モデルを保存
