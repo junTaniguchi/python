@@ -15,19 +15,19 @@ import numpy as np
 import keras.callbacks
 import keras.backend.tensorflow_backend as KTF
 from keras.utils.visualize_util import plot
-import json
 from PIL import Image, ImageDraw, ImageFont
 import shutil
 
 
-image_w = 300
-image_h = 300
+#image_w = 300
+#image_h = 300
 log_filepath = './log'
 
 path = "/Users/JunTaniguchi/study_tensorflow/keras_project/read_place"
 os.chdir(path)
 
 from ssd import SSD300
+from SpatialPyramidPooling import SpatialPyramidPooling
 
 # フォント画像のデータを読む
 xy = np.load("./param/place_name.npz")
@@ -45,9 +45,9 @@ Y = np_utils.to_categorical(Y, NUM_CLASSES)
 
 # 訓練データとテストデータに分割
 X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, Y)
-x_train_pred = X_train
-X_train = np.reshape(X_train, (len(X_train),  300, 300, 3))
-X_test  = np.reshape(X_test, (len(X_test), 300, 300, 3))
+X_train_pred = X_train
+#X_train = np.reshape(X_train, (len(X_train), 300, 300, 3))
+#X_test  = np.reshape(X_test, (len(X_test), 300, 300, 3))
 print('X_train shape:', X_train.shape)
 
 #VGG
@@ -99,9 +99,9 @@ with tf.Graph().as_default():
     base_lr = 3e-4
     optim = keras.optimizers.Adam(lr=base_lr)
 
-    # モデルを構築
+    # モデルを構築(SPPNet)
     model = Sequential()
-    model.add(Convolution2D(32, 3, 3, border_mode='same', input_shape=(image_w, image_h, 3)))
+    model.add(Convolution2D(32, 3, 3, border_mode='same', input_shape=(None, None, 3)))
     model.add(Activation('relu'))
     model.add(Convolution2D(32, 3, 3, border_mode='same'))
     model.add(Activation('relu'))
@@ -122,10 +122,11 @@ with tf.Graph().as_default():
     model.add(MaxPooling2D(pool_size=(2, 2)))
     model.add(Dropout(0.50))
     
-    model.add(Flatten())
+    #model.add(Flatten())
     model.add(Dense(64))
     model.add(Activation('relu'))
     model.add(Dropout(0.25))
+    model.add(SpatialPyramidPooling([1, 2, 4]))
     model.add(Dense(NUM_CLASSES))
     model.add(Activation('softmax'))
     model.compile(loss='categorical_crossentropy',
@@ -207,6 +208,6 @@ for idx, idx_result_X in enumerate(result_X_test):
     # 不正解だったデータを画像化
     # idx_result_Xを非正規化
     X_test[idx] *= 256
-    X_img_array = X_test[idx].reshape(image_w, image_h, 3)
+    X_img_array = X_test[idx]
     img = Image.fromarray(np.uint8(X_img_array))
     img.save(incorrect_file_name) 
