@@ -33,7 +33,7 @@ with open("./param/place_tokyo.txt", "r") as place_file:
 NUM_CLASSES = len(place_list)
 
 # 存在するnpzファイル全てを取り込む
-npz_list = glob.glob("./param/*.npz") # Mac
+npz_list = glob.glob("./param/npz/*.npz") # Mac
 xy = []
 X = []
 Y = []
@@ -137,8 +137,8 @@ with tf.Graph().as_default():
     model.add(Dense(NUM_CLASSES))
     model.add(Activation('softmax'))
     model.compile(loss='categorical_crossentropy',
-        optimizer=optim,
-        metrics=['accuracy'])
+                  optimizer=optim,
+                  metrics=['accuracy'])
     model.summary()
     # 中間チェックポイントのデータを一時保存するためのディレクトリを作成
     if not os.path.exists('./param/checkpoints'):
@@ -186,8 +186,9 @@ with tf.Graph().as_default():
     score = []
     for i in range(len(xy)):
         score = model.evaluate(X_test[i], y_test[i], verbose=0)
-        print('Test score:', score[0])
-        print('Test accuracy;', score[1])
+        print('Learning No.%s' %str(i))
+        print('  Test score:', score[0])
+        print('  Test accuracy;', score[1])
 
 #KTF.set_session(old_session)
 print("finish!!")
