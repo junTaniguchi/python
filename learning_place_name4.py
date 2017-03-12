@@ -47,7 +47,7 @@ for no, npz in enumerate(npz_list):
     X.append(xy[no]["x"])
     Y.append(xy[no]["y"])
     cat_list.append(xy[no]["y"][:,0])
-    Y_rect[no] = Y
+    Y_rect.append(Y[no])
     X[no] /= 255
     cat_list[no] = np_utils.to_categorical(cat_list[no], NUM_CLASSES)
 
