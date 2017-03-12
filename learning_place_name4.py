@@ -40,13 +40,14 @@ xy = []
 X = []
 Y = []
 cat_list = []
+Y_rect = []
 # フォント画像のデータを読む
 for no, npz in enumerate(npz_list):
     xy.append(np.load(npz))
     X.append(xy[no]["x"])
     Y.append(xy[no]["y"])
     cat_list.append(xy[no]["y"][:,0])
-    Y_rect = cat_list
+    Y_rect[no] = Y
     X[no] /= 255
     cat_list[no] = np_utils.to_categorical(cat_list[no], NUM_CLASSES)
 
@@ -146,10 +147,9 @@ with tf.Graph().as_default():
                             callbacks=callbacks,
                             validation_data=(X_test[i], y_test[i]))
         result_X_test_list.append(model.predict(X_test[i].astype(np.float32)))
-        history_list.append(history)
+        plot_history(i, history_list)
         print("Learning No.%s is ended" % str(i))
     # 学習履歴をプロット        
-    plot_history(history_list)
     plot(model, to_file='./param/learning_place_name.png')
     # モデルを保存
     model.save_weights('./param/learning_place_name.hdf5')
