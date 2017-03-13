@@ -4,7 +4,7 @@ from PIL import Image, ImageDraw, ImageFont
 import cv2
 import numpy as np
 
-path = "/Users/j13-taniguchi/study_tensorflow/keras_project/read_place"
+path = "/Users/JunTaniguchi/study_tensorflow/keras_project/read_place"
 os.chdir(path)
 
 #フォンントのリストを作成
@@ -23,14 +23,14 @@ for place_name in place_list:
     if not os.path.exists(url):
         os.makedirs(url)
 
-def gaussianBlur_image(img_name, 
-                       place_name, 
-                       image_np, 
-                       idx1, 
-                       idx2, 
-                       X, 
-                       Y, 
-                       font_size, 
+def gaussianBlur_image(img_name,
+                       place_name,
+                       image_np,
+                       idx1,
+                       idx2,
+                       X,
+                       Y,
+                       font_size,
                        axis_detail,
                        place_num):
     # opencvのガウシアンフィルターを適応
@@ -39,21 +39,14 @@ def gaussianBlur_image(img_name,
     img_file_name = "./image/" + place_name + "/" + str(idx1) + img_name + "_GaussianBlur_" + str(font_size)  + place_name + '.png'
     # 画像ファイルを保存する
     blur_image.save(img_file_name, 'PNG')
-    '''
-    print(place_num)
-    print(axis_detail1[0])
-    print(axis_detail1[1])
-    print(axis_detail1[2])
-    print(axis_detail1[3])
-    print(axis_detail2[0])
-    print(axis_detail2[1])
-    print(axis_detail2[2])
-    print(axis_detail2[3])
-    '''
     data = np.asarray(blur_image)        
-
     X.append(data.astype(np.float64))
-    img_detail = [idx2, place_num, axis_detail]
+
+    img_detail = []    
+    while len(axis_detail) < 20:
+        axis_detail+=[0, 0, 0, 0, 0]
+    img_detail.extend(axis_detail)
+    #print(img_detail)
     Y.append(img_detail)
    
 def make_img (img_name,
@@ -89,10 +82,11 @@ def make_img (img_name,
                             width =  str_width
                             height = font_size
                             axis_detail = []
-                            axis_detail.append([x_draw_pixel,
-                                                y_draw_pixel,
-                                                x_draw_pixel + width,
-                                                y_draw_pixel + height])
+                            axis_detail+=[idx2 + 1,
+                                          x_draw_pixel,
+                                          y_draw_pixel,
+                                          x_draw_pixel + width,
+                                          y_draw_pixel + height]
                             
                             # 日本語の文字を入れてみる
                             # 引数は順に「(文字列の左上のx座標, 文字列の左上のy座標)」「フォントの指定」「文字色」
@@ -101,39 +95,42 @@ def make_img (img_name,
                             if x_draw_pixel % 2 == 0:
                                 if y_draw_pixel < y_pixel / 2:
                                     y_special_draw_pixel = y_draw_pixel / 2
-                                    axis_detail.append([x_draw_pixel,
-                                                        y_special_draw_pixel,
-                                                        x_draw_pixel + width,
-                                                        y_special_draw_pixel + height])
+                                    axis_detail+=[1,
+                                                  x_draw_pixel,
+                                                  y_special_draw_pixel,
+                                                  x_draw_pixel + width,
+                                                  y_special_draw_pixel + height]
                                     draw.text((x_draw_pixel, y_special_draw_pixel), "東京", font=font, fill='#ffffff')
                                     place_num+=1
                                 if x_draw_pixel < x_pixel / 2:
                                     x_special_draw_pixel = x_draw_pixel / 2
-                                    axis_detail.append([x_special_draw_pixel,
-                                                        y_draw_pixel,
-                                                        x_special_draw_pixel + width,
-                                                        y_draw_pixel + height])
+                                    axis_detail+=[2,
+                                                  x_special_draw_pixel,
+                                                  y_draw_pixel,
+                                                  x_special_draw_pixel + width,
+                                                  y_draw_pixel + height]
                                     draw.text((x_draw_pixel, y_special_draw_pixel), "名古屋", font=font, fill='#ffffff')
                                     place_num+=1
                                 if y_draw_pixel < y_pixel / 2 and x_draw_pixel < x_pixel / 2:
                                     y_special_draw_pixel = y_draw_pixel / 2
                                     x_special_draw_pixel = x_draw_pixel / 2
-                                    axis_detail.append([x_special_draw_pixel,
-                                                        y_special_draw_pixel,
-                                                        x_special_draw_pixel + width,
-                                                        y_special_draw_pixel + height])
+                                    axis_detail+=[3,
+                                                  x_special_draw_pixel,
+                                                  y_special_draw_pixel,
+                                                  x_special_draw_pixel + width,
+                                                  y_special_draw_pixel + height]
                                     draw.text((x_draw_pixel, y_special_draw_pixel), "大阪", font=font, fill='#ffffff')
                                     place_num+=1
 
                                     
                             image_np = np.asarray(image)
                             gaussianBlur_image(img_name, place_name, image_np, idx1, idx2, X, Y, font_size, axis_detail, place_num)
-                            print(i)
+                            #print(i)
                             i+=1
     X = np.array(X)
-    np.save("./param/npz/place_name_%s_%s_%s.npy" % (str(font_size), str(x_pixel), str(y_pixel)), X)
-    with open("./param/npz/label.txt", 'a') as y_file:
-        y_file.write(Y + '\n')
+    print(Y)
+    #Y = np.array(Y)
+    np.savez("./param/npz/place_name_%s_%s_%s.npy" % (str(font_size), str(x_pixel), str(y_pixel)), x=X,y=Y)
     print("ok,", len(Y))
 
 for y_pixel in [60]:
