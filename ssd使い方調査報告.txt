@@ -1,0 +1,27 @@
+gt_pascal.pkl
+	トレーニングデータ。
+	各行は１つのオブジェクト。
+	構造自体はPASCAL_VOC/get_data_from_XMLと同様となっている。
+	get_data_from_XML.pyを変更してデータセットを作成する。
+	dict型                      keyはリスト形式 はじめの４桁が座標、残りがカテゴリのone-hot表現
+	 ファイル名                         xmin              ymin              xmax              ymax             one_hot
+	{'frame01717.png': array([[ 0.56953125,  0.30972222,  0.78984375,  0.6125        ,  1.        ,          0.        ,  0.        ]]),
+	 'frame03968.png': array([[ 0.29296875,  0.4625        ,  0.77578125,  0.75972222,  1.        ,          0.        ,  0.        ]])}
+
+	オブジェクトの座標
+		[xmin、ymin、xmax、ymax、prob1] = [x0、y0、x0 + width、y0 + height、1 ]
+		x / img_width
+		y / img_height 
+		(x + w) / img_width
+		(y + h) / img_height
+		one_hot_category
+
+
+
+prior_boxes_ssd300.pkl
+	データセットの変更に伴う変更を一切行う必要はない。
+	prior_boxesのSSDの内容を変更しない限りは特に何かを行う必要はない。
+	機能として300x300pixelから7308のバウンディングボックスを作成し、
+	そこから物体の検出を行なっている。
+array([ 0.        ,  0.        ,  0.06315789,  0.06315789,  0.1       ,0.1       ,  0.2       ,  0.2       ], dtype=float32)
+
