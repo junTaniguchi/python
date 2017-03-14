@@ -25,7 +25,7 @@ os.chdir(path)
 log_filepath = './log'
 
 from ssd import SSD300
-from use_spp_net_model import use_spp_net_model
+from use_spp_net_model2 import use_spp_net_model2
 from plot_history import plot_history
 
 #地名のリストを作成
@@ -43,10 +43,13 @@ Y = []
 for no, npz in enumerate(npz_list):
     xy.append(np.load(npz))
     X.append(xy[no]["x"])
-    Y.append(xy[no]["y"][:,0])
-    Y_rect = xy[no]["y"]
+    category_one_hot = xy[no]["y"][:,0]
+    category_one_hot = np_utils.to_categorical(category_one_hot, NUM_CLASSES)
+    margin = xy[no]["y"][:,1:]
+    margin_norm = margin / 255
+    one_hot_label = np.hstack((category_one_hot, margin_norm))
+    Y.append(one_hot_label)
     X[no] /= 255
-    Y[no] = np_utils.to_categorical(Y[no], NUM_CLASSES)
 
 X_train = []
 y_train = []
@@ -61,43 +64,10 @@ for i in range(len(xy)):
     y_test.append(y_test_i)
 
 #VGG
-#old_session = KTF.get_session()
+old_session = KTF.get_session()
 
 
 with tf.Graph().as_default():
-    '''
-    session = tf.Session('')
-    KTF.set_session(session)
-    KTF.set_learning_phase(1)
-    def schedule(epoch, decay=0.9):
-        return base_lr * decay**(epoch)
-    base_lr = 3e-4
-    optim = keras.optimizers.Adam(lr=base_lr)
-    # モデルを構築
-    model = SSD300(input_shape=(300, 300, 3), num_classes=NUM_CLASSES + 1)
-    model.compile(loss='categorical_crossentropy',
-        optimizer=optim,
-        metrics=['accuracy'])
-    model.summary()
-    
-    # callback関数にて下記機能を追加
-    #    重みパラメータの中間セーブ
-    #    学習率のスケジューラ
-    #    改善率が低い場合にトレーニングを終了する
-    #    TensorBoardの使用
-    callbacks = [
-                 keras.callbacks.ModelCheckpoint('./param/checkpoints/weights.{epoch:02d}-{val_loss:.2f}.hdf5', verbose=1, save_weights_only=True),
-                 keras.callbacks.LearningRateScheduler(schedule),
-                 keras.callbacks.EarlyStopping(monitor='val_loss', patience=0, verbose=0, mode='auto'),
-                 #keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=1, write_graph=True)
-                ]
-    # 学習開始
-    history = model.fit(X_train, y_train,
-                        batch_size=128,
-                        nb_epoch=1,
-                        verbose=1,
-                        validation_data=(X_test, y_test))
-    '''
     session = tf.Session('')
     KTF.set_session(session)
     KTF.set_learning_phase(1)
@@ -109,9 +79,11 @@ with tf.Graph().as_default():
     optim = keras.optimizers.Adam(lr=3e-4)
 
     # モデルを構築(SPPNet)
-    model = use_spp_net_model(input_shape=(None, None, 3),
-                              NUM_CLASSES=NUM_CLASSES,
-                              optim=optim)
+    model = use_spp_net_model2(input_shape=(None, None, 3),
+                               NUM_CLASSES=NUM_CLASSES)
+    model.compile(loss='categorical_crossentropy',
+                  optimizer=optim,
+                  metrics=['accuracy'])
     model.summary()
     # 中間チェックポイントのデータを一時保存するためのディレクトリを作成
     if not os.path.exists('./param/checkpoints'):
@@ -126,7 +98,7 @@ with tf.Graph().as_default():
                  keras.callbacks.ModelCheckpoint('./param/checkpoints/weights.{epoch:02d}-{val_loss:.2f}.hdf5', verbose=1, save_weights_only=True),
                  keras.callbacks.LearningRateScheduler(schedule),
                  keras.callbacks.EarlyStopping(monitor='val_loss', patience=0, verbose=0, mode='auto'),
-                 #keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=1, write_graph=True)
+                 keras.callbacks.TensorBoard(log_dir='./logs', histogram_freq=1)
                 ]
         
     if os.path.exists('learning_place_name.hdf5'):
@@ -137,46 +109,52 @@ with tf.Graph().as_default():
     for i in range(len(xy)):
         history = model.fit(X_train[i], y_train[i],
                             batch_size=128,
-                            nb_epoch=50,
+                            nb_epoch=20,
                             verbose=1,
                             callbacks=callbacks,
                             validation_data=(X_test[i], y_test[i]))
         result_X_test_list.append(model.predict(X_test[i].astype(np.float32)))
         plot_history(i, history)
         print("Learning No.%s is ended" % str(i))
-    # 学習履歴をプロット        
-    plot(model, to_file='./param/learning_place_name.png')
-    # モデルを保存
+    # モデルをpngでプロット
+    plot(model,
+         to_file='./param/learning_place_name.png', 
+         show_shapes=True,
+         show_layer_names=True)
+    # 重みパラメータを保存
     model.save_weights('./param/learning_place_name.hdf5')
     # チェックポイントとなっていたファイルを削除
     shutil.rmtree('./param/checkpoints')
     
-    # 重みパラメータをJSONフォーマットで出力
+    # モデルをJSONフォーマットで出力
     model_json = model.to_json()
     with open('./param/learning_place_name.json', 'w') as json_file:
-        #json.dump(model_json, json_file)
         json_file.write(model_json)
     
     # モデルを評価
     score = []
     for i in range(len(xy)):
         score = model.evaluate(X_test[i], y_test[i], verbose=0)
-        print('Learning No.%s' %str(i))
-        print('  Test score:', score[0])
-        print('  Test accuracy;', score[1])
+        print('Learning No.%s  :' %str(i))
+        print('  Test score    :', score[0])
+        print('  Test accuracy ;', score[1])
 
-#KTF.set_session(old_session)
+    KTF.set_session(old_session)
 print("finish!!")
+
+
 correct_count = 0
 incorrect_count = 0
 for idx1, result_X_test in enumerate(result_X_test_list):
     # 予測結果と正解のラベルを照合する
     for idx2, idx_result_X in enumerate(result_X_test):
-        # 予測結果のargmaxを抽出    
-        result_idx = idx_result_X.argmax()
+        # 予測結果のargmaxを抽出
+        result_category = idx_result_X[:-4]
+        result_idx = result_category.argmax()
         result_label = place_list[result_idx]
         # 正解の番号を抽出
-        answer_idx = y_test[idx1][idx2].argmax()
+        answer_category = y_test[idx1][idx2][:-4]
+        answer_idx = answer_category.argmax()
         answer_label = place_list[answer_idx]
         # 予測結果と正解の値を比較
         if result_idx == answer_idx:
@@ -194,17 +172,22 @@ for idx1, result_X_test in enumerate(result_X_test_list):
         if correct_flag:
             output_dir = "./result/correct/%s/" %(answer_label)
         else:
-            output_dir = "./result/incorrect/%s/" %(answer_label)
+            pass
+            #output_dir = "./result/incorrect/%s/" %(answer_label)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         incorrect_file_name = output_dir + answer_label + str(idx2) + ".png"
         # 不正解だったデータを画像化
         # idx_result_Xを非正規化
-        X_test[idx1][idx2] *= 256
+        '''
+        idx_result_X[-4:] *= 256
         X_img_array = X_test[idx1][idx2]
-        x, y, w, h = xy[1][result_idx][1:5]
-        img = cv2.rectangle(X_img_array, (x, y), (w, h), (0, 0, 255), 10)
+        x_min, x_max, y_min, y_max = idx_result_X[-4:]
+        width = x_max - x_min
+        height = y_max - y_min
+        img = cv2.rectangle(X_img_array, (x_min, y_min), (width, height), (0, 0, 255), 10)
         img = Image.fromarray(np.uint8(img))
         img.save(incorrect_file_name) 
+        '''
 print("correct_count   :%s" % str(correct_count))
 print("incorrect_count :%s" % str(incorrect_count))
