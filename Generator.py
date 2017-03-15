@@ -1,20 +1,16 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Mar 15 13:35:40 2017
-
 @author: j13-taniguchi
 """
 
 
-import cv2
-import keras
 from keras.applications.imagenet_utils import preprocess_input
 from keras.backend.tensorflow_backend import set_session
 from keras.models import Model
 from keras.preprocessing import image
 import matplotlib.pyplot as plt
 import numpy as np
-import pickle
 from random import shuffle
 from scipy.misc import imread
 from scipy.misc import imresize
