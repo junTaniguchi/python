@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+'''
+python 2.7のモジュールをpython 3.5.1用へ書き換えたもの
+'''
 import skimage.io
 import skimage.feature
 import skimage.color
