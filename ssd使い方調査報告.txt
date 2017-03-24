@@ -24,4 +24,9 @@ prior_boxes_ssd300.pkl
 	機能として300x300pixelから7308のバウンディングボックスを作成し、
 	そこから物体の検出を行なっている。
 array([ 0.        ,  0.        ,  0.06315789,  0.06315789,  0.1       ,0.1       ,  0.2       ,  0.2       ], dtype=float32)
-
+    {'layer_width'  : 38, 
+     'layer_height' : 38,
+     'num_prior'    : 3,
+     'min_size'     : 30.0,
+     'max_size'     : None,
+     'aspect_ratios': [1.0, 2.0, 1/2.0]}
