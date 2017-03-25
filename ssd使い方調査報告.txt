@@ -23,6 +23,7 @@ prior_boxes_ssd300.pkl
 	prior_boxesのSSDの内容を変更しない限りは特に何かを行う必要はない。
 	機能として300x300pixelから7308のバウンディングボックスを作成し、
 	そこから物体の検出を行なっている。
+	priors[i] = [xmin, ymin, xmax, ymax, varxc, varyc, varw, varh]
 array([ 0.        ,  0.        ,  0.06315789,  0.06315789,  0.1       ,0.1       ,  0.2       ,  0.2       ], dtype=float32)
     {'layer_width'  : 38, 
      'layer_height' : 38,
